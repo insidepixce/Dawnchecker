@@ -133,5 +133,18 @@ app.delete('/delete/:id', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+app.post('/delete/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    await postCollection.deleteOne({ _id: parseInt(postId) });
+    console.log('게시물 삭제 완료');
+    res.redirect('/list');
+  } catch (error) {
+    console.error('게시물 삭제 중 오류 발생:', error);
+    res.status(500).send('게시물 삭제에 실패하였습니다.');
+  }
+});
+
 connectToMongoDB();
 //test
