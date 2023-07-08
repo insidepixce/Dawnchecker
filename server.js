@@ -34,9 +34,8 @@ app.post('/add', async (req, res) => {
   res.send('전송완료');
   try {
     const result = await db.collection("counter").findOne({ name: '게시물갯수' });
-    console.log(result.totalPost);
     const totalPost = result.totalPost;
-    await db.collection('post').insertOne({ 제목: req.body.title, 날짜: req.body.date, _id: totalPost });
+    await db.collection('post').insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x', _id: totalPost });
     console.log('저장완료');
     await db.collection('counter').updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } });
   } catch (error) {
@@ -53,5 +52,16 @@ app.get('/list', async (req, res) => {
   }
 });
 
+app.post('/updateCheck/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const checkValue = req.body.check === 'on' ? 'o' : 'x';
+    await db.collection('post').updateOne({ _id: parseInt(postId) }, { $set: { check: checkValue } });
+    console.log('체크값 업데이트 완료');
+    res.redirect('/list');
+  } catch (error) {
+    console.error('체크값 업데이트 중 오류 발생:', error);
+  }
+});
 
 connectToMongoDB();
