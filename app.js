@@ -122,6 +122,4 @@ app.post('/updateCheck/:id', async (req, res) => {
       res.status(500).send('체크값 업데이트에 실패하였습니다.');
     }
   });
-
-
 connectToMongoDB();
