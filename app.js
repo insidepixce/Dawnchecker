@@ -44,11 +44,11 @@ app.listen(8000, () => {
   });
 
   app.get('/main', async (req, res) => {
-    res.sendFile(path.join(__dirname, '/main.html'));
+    res.sendFile(path.join(__dirname, '/views/main.html'));
   });
   
   app.get('/', async (req, res) => {
-        res.sendFile(path.join(__dirname, '/write.html'));
+        res.sendFile(path.join(__dirname, '/views/write.html'));
       });
 
  
