@@ -122,5 +122,16 @@ app.post('/updateCheck/:id', async (req, res) => {
       res.status(500).send('체크값 업데이트에 실패하였습니다.');
     }
   });
+app.delete('/delete/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    await postCollection.deleteOne({ _id: parseInt(postId) });
+    console.log('게시물 삭제 완료');
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('게시물 삭제 중 오류 발생:', error);
+    res.sendStatus(500);
+  }
+});
 connectToMongoDB();
 //test
