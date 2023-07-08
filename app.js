@@ -7,7 +7,7 @@ const multer = require('multer');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'image') 
+    cb(null, path.join(__dirname, 'image')) 
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '-' + Date.now())
@@ -39,9 +39,10 @@ const connectToMongoDB = async () => {
   }
 };
 
-app.listen(8000, () => {
-    console.log('Listening on port 8000');
-  });
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Listening on port 8000');
+});
+
 
   app.get('/main', async (req, res) => {
     res.sendFile(path.join(__dirname, 'views/main.html'));
@@ -84,10 +85,10 @@ app.listen(8000, () => {
   });
 
 
-app.post('/upload', upload.single('photo'), async (req, res) => { // multer 미들웨어를 추가합니다.
+  app.post('/upload', upload.single('photo'), async (req, res) => {
     try {
       const post = {
-        photo: req.file.path, // multer 미들웨어를 통해 저장된 파일의 경로를 사용합니다.
+        photo: req.protocol + '://' + req.get('host') + '/image/' + req.file.filename,
         content: req.body.content,
         currentTime: req.body.currentTime
       };
@@ -98,7 +99,9 @@ app.post('/upload', upload.single('photo'), async (req, res) => { // multer 미�
       console.error('Error while uploading post:', error);
       res.status(500).send('업로드에 실패하였습니다.');
     }
-});
+  });
+  
+  
 
 app.get('/gong', async (req, res) => {
   try {
@@ -109,19 +112,19 @@ app.get('/gong', async (req, res) => {
     res.status(500).send('게시물을 가져오는데 실패하였습니다.');
   }
 });
-
 app.post('/updateCheck/:id', async (req, res) => {
-    try {
-      const postId = req.params.id;
-      const checkValue = req.body.check === 'on' ? 'o' : 'x';
-      await postCollection.updateOne({ _id: parseInt(postId) }, { $set: { check: checkValue } });
-      console.log('체크값 업데이트 완료');
-      res.redirect('/list');
-    } catch (error) {
-      console.error('체크값 업데이트 중 오류 발생:', error);
-      res.status(500).send('체크값 업데이트에 실패하였습니다.');
-    }
-  });
+  try {
+    const postId = req.params.id;
+    const checkValue = req.body.check === 'on' ? 'o' : 'x';
+    await postCollection.updateOne({ _id: parseInt(postId) }, { $set: { check: checkValue } });
+    console.log('체크값 업데이트 완료');
+    res.redirect('/list');
+  } catch (error) {
+    console.error('체크값 업데이트 중 오류 발생:', error);
+    res.status(500).send('체크값 업데이트에 실패하였습니다.');
+  }
+});
+
   const { ObjectId } = require('mongodb');
 
   app.delete('/delete/:id', async (req, res) => {
@@ -148,8 +151,4 @@ app.post('/updateCheck/:id', async (req, res) => {
     }
   });
   
-
-
-
-
 connectToMongoDB();

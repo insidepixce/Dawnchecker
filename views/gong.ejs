@@ -116,39 +116,31 @@
     const deleteForms = document.querySelectorAll('.delete-form');
   
     deleteForms.forEach((form) => {
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const confirmDelete = confirm('Are you sure you want to delete this post?');
-    if (confirmDelete) {
-      const url = form.getAttribute('action');
-      fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const confirmDelete = confirm('Are you sure you want to delete this post?');
+        if (confirmDelete) {
+          const url = '/gong' + form.getAttribute('action');  // '/gong' prefix added
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then((response) => {
+            if (response.ok) {
+              form.closest('.post-container').remove();
+            } else {
+              alert('Failed to delete the post.');
+            }
+          })
+          .catch((error) => {
+            console.error('Error deleting post:', error);
+            alert('An error occurred while deleting the post.');
+          });
         }
-      })
-      .then((response) => {
-        if (response.ok) {
-          form.closest('.post-container').remove();
-        } else {
-          alert('Failed to delete the post.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error deleting post:', error);
-        alert('An error occurred while deleting the post.');
       });
-    }
-  });
-});
-
-
-
-
-
-
-
-
+    });
   </script>
   
 </body>
