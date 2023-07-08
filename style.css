@@ -4,7 +4,7 @@
   background-image: url(source/kitchyback.jpeg);
   background-size: cover;
   background-repeat: no-repeat;
-  text-align: center;
+  
  
   
 }
@@ -76,7 +76,7 @@ z-index: 1;
 
 .brightning{
   width: 80%;
-  height: 60%;
+  height: 100%;
   position: absolute;
   top: 10%;
   left:10%;
