@@ -147,7 +147,7 @@ z-index: 1;
   .table{
     margin: 0 auto;
     position: absolute;
-    top: 28%;
+    top:30%;
     left: 20%;
     max-height:70%;
   
@@ -162,4 +162,37 @@ z-index: 1;
     transform: translate(-50%, -50%);
     margin-top: 90px;
     z-index: 1;
+  }
+  .post-image {
+    width: 200px;
+    height: 200px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  .container{
+    background-color: white;
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    top: 20%;
+    left:25%;
+
+  }
+  .post-container {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 10px;
+    width: 225px;
+    font-family: 'Poor Story', cursive;
+  
+  }
+  .row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .navbar {
+    align-items: center;
   }
