@@ -1,9 +1,10 @@
 .main-background {
   width: 100%;
   height: 1000px;
-  background-image: url(../../source/kitchyback.jpeg);
+  background-image: url(source/kitchyback.jpeg);
   background-size: cover;
   background-repeat: no-repeat;
+  text-align: center;
  
   
 }
@@ -69,7 +70,8 @@ z-index: 1;
   position: absolute;
   top: 10%;
   left:10%;
-  max-height:70%
+  max-height:70%;
+  background-image: url(source/kitchyroom.png);
 }
 
 .brightning{
