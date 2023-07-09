@@ -2,41 +2,41 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
-const MongoClient = require('mongodb').MongoClient;
-const multer = require('multer'); 
+const { MongoClient, ObjectId } = require('mongodb');
+const multer = require('multer');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'image')) 
+    cb(null, path.join(__dirname, 'public', 'image'));
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now())
+    cb(null, file.fieldname + '-' + Date.now());
   }
-})
-const upload = multer({ storage: storage });
+});
+const upload = multer({ storage });
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
+app.use('/image', express.static('public/image'));
 app.set("view engine", "ejs");
-app.use('/image', express.static('image'))
+app.use('/image', express.static(path.join(__dirname, 'public', 'image')));
 app.use(express.static('public', {
   setHeaders: function (res, path, stat) {
     res.set('Cache-Control', 'public, max-age=31536000'); // 1 year
   }
 }));
 
-
-
-let db;
+const url = 'mongodb+srv://sparta:test@sparta.rqx1qlk.mongodb.net/?retryWrites=true&w=majority';
+const dbName = 'todoapp';
 let postCollection;
 let counterCollection;
 let gongCollection;
 
 const connectToMongoDB = async () => {
   try {
-    const client = await MongoClient.connect('mongodb+srv://sparta:test@sparta.rqx1qlk.mongodb.net/?retryWrites=true&w=majority');
-    db = client.db('todoapp');
+    const client = await MongoClient.connect(url);
+    const db = client.db(dbName);
     postCollection = db.collection('post');
     counterCollection = db.collection('counter');
     gongCollection = db.collection('gong');
@@ -46,69 +46,63 @@ const connectToMongoDB = async () => {
   }
 };
 
+connectToMongoDB(); // MongoDB에 연결
+
 app.listen(3000, '0.0.0.0', () => {
   console.log('Listening on port 8000');
 });
 
+app.get('/main', async (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'main.html'));
+});
 
-  app.get('/main', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'views/main.html'));
-  });
+app.get('/', async (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'write.html'));
+});
 
-  app.get('/', async (req, res) => {
-        res.sendFile(path.join(__dirname, 'views/write.html'));
-      });
+app.post('/add', async (req, res) => {
+  try {
+    const result = await counterCollection.findOne({ name: '게시물갯수' });
+    const totalPost = result.totalPost;
+    await postCollection.insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x', _id: totalPost });
+    console.log('저장완료');
+    await counterCollection.updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } });
+    const postresult = await postCollection.find().toArray();
+    res.render('list.ejs', { posts: postresult });
+  } catch (error) {
+    console.error('Error while adding post:', error);
+    res.status(500).send('전송에 실패하였습니다.');
+  }
+});
+
+app.get('/list', async (req, res) => {
+  try {
+    const result = await postCollection.find().toArray();
+    res.render('list.ejs', { posts: result });
+  } catch (error) {
+    console.error('Error while retrieving posts:', error);
+    res.status(500).send('게시물을 가져오는데 실패하였습니다.');
+  }
+});
+
+app.post('/upload', upload.single('photo'), async (req, res) => {
+  try {
+    const post = {
+      photo: 'https://dawnchecker.fly.dev/' + req.file.filename, // 수정된 부분
+      content: req.body.content,
+      currentTime: req.body.currentTime
+    };
+    
+    await gongCollection.insertOne(post);
+    console.log('저장완료');
+    res.send('전송완료');
+  } catch (error) {
+    console.error('Error while uploading post:', error);
+    res.status(500).send('업로드에 실패하였습니다.');
+  }
+});
 
 
-
-  app.post('/add', async (req, res) => {
-    try {
-      const result = await counterCollection.findOne({ name: '게시물갯수' });
-      const totalPost = result.totalPost;
-      await postCollection.insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x', _id: totalPost });
-      console.log('저장완료');
-      await counterCollection.updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } });
-      try {
-        const result = await postCollection.find().toArray();
-        res.render('list.ejs', { posts: result });
-      } catch (error) {
-        console.error('Error while retrieving posts:', error);
-        res.status(500).send('게시물을 가져오는데 실패하였습니다.');
-      }
-    } catch (error) {
-      console.error('Error while adding post:', error);
-      res.status(500).send('전송에 실패하였습니다.');
-    }
-  });
-
-  app.get('/list', async (req, res) => {
-    try {
-      const result = await postCollection.find().toArray();
-      res.render('list.ejs', { posts: result });
-    } catch (error) {
-      console.error('Error while retrieving posts:', error);
-      res.status(500).send('게시물을 가져오는데 실패하였습니다.');
-    }
-  });
-
-
-  app.post('/upload', upload.single('photo'), async (req, res) => {
-    try {
-      const post = {
-        photo: req.protocol + 's://' + req.get('host') + '/image/' + req.file.filename,
-        content: req.body.content,
-        currentTime: req.body.currentTime
-      };
-      await gongCollection.insertOne(post);
-      console.log('저장완료');
-      res.send('전송완료');
-    } catch (error) {
-      console.error('Error while uploading post:', error);
-      res.status(500).send('업로드에 실패하였습니다.');
-    }
-  });
-  
-  
 
 app.get('/gong', async (req, res) => {
   try {
@@ -119,6 +113,7 @@ app.get('/gong', async (req, res) => {
     res.status(500).send('게시물을 가져오는데 실패하였습니다.');
   }
 });
+
 app.post('/updateCheck/:id', async (req, res) => {
   try {
     const postId = req.params.id;
@@ -132,30 +127,26 @@ app.post('/updateCheck/:id', async (req, res) => {
   }
 });
 
-  const { ObjectId } = require('mongodb');
+app.delete('/delete/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    await postCollection.deleteOne({ _id: new ObjectId(postId) });
+    console.log('게시물 삭제 완료');
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('게시물 삭제 중 오류 발생:', error);
+    res.sendStatus(500);
+  }
+});
 
-  app.delete('/delete/:id', async (req, res) => {
-    try {
-      const postId = req.params.id;
-      await postCollection.deleteOne({ _id: new ObjectId(postId) });
-      console.log('게시물 삭제 완료');
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('게시물 삭제 중 오류 발생:', error);
-      res.sendStatus(500);
-    }
-  });
-  
-  app.delete('/gong/delete/:id', async (req, res) => {
-    try {
-      const postId = req.params.id;
-      await gongCollection.deleteOne({ _id: new ObjectId(postId) });
-      console.log('데이터 삭제 완료');
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('데이터 삭제 중 오류 발생:', error);
-      res.sendStatus(500);
-    }
-  });
-  
-connectToMongoDB();
+app.delete('/gong/delete/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    await gongCollection.deleteOne({ _id: new ObjectId(postId) });
+    console.log('데이터 삭제 완료');
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('데이터 삭제 중 오류 발생:', error);
+    res.sendStatus(500);
+  }
+});
