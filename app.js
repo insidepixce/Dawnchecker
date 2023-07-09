@@ -95,7 +95,7 @@ app.listen(3000, '0.0.0.0', () => {
   app.post('/upload', upload.single('photo'), async (req, res) => {
     try {
       const post = {
-        photo: req.protocol + '://' + req.get('host') + '/image/' + req.file.filename,
+        photo: req.protocol + 's://' + req.get('host') + '/image/' + req.file.filename,
         content: req.body.content,
         currentTime: req.body.currentTime
       };
