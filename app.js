@@ -20,6 +20,13 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname));
 app.set("view engine", "ejs");
 app.use('/image', express.static('image'))
+app.use(express.static('public', {
+  setHeaders: function (res, path, stat) {
+    res.set('Cache-Control', 'public, max-age=31536000'); // 1 year
+  }
+}));
+
+
 
 let db;
 let postCollection;
