@@ -25,7 +25,6 @@ const upload = multer({
   }
 });
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
@@ -37,7 +36,6 @@ app.use('/image', express.static(path.join(__dirname, 'public', 'image'), {
     res.set('Cache-Control', 'public, max-age=31536000'); // 1 year
   }
 }));
-
 
 const url = 'mongodb+srv://sparta:test@sparta.rqx1qlk.mongodb.net/?retryWrites=true&w=majority';
 const dbName = 'todoapp';
@@ -61,7 +59,7 @@ const connectToMongoDB = async () => {
 connectToMongoDB(); // MongoDB에 연결
 
 app.listen(3000, '0.0.0.0', () => {
-  console.log('Listening on port 8000');
+  console.log('Listening on port 3000');
 });
 
 app.get('/main', async (req, res) => {
@@ -76,7 +74,7 @@ app.post('/add', async (req, res) => {
   try {
     const result = await counterCollection.findOne({ name: '게시물갯수' });
     const totalPost = result.totalPost;
-    await postCollection.insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x'});
+    await postCollection.insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x' });
     console.log('저장완료');
     await counterCollection.updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } });
     const postresult = await postCollection.find().toArray();
@@ -95,7 +93,7 @@ app.get('/list', async (req, res) => {
     console.error('Error while retrieving posts:', error);
     res.status(500).send('게시물을 가져오는데 실패하였습니다.');
   }
-}); 
+});
 
 app.post('/upload', upload.single('photo'), async (req, res) => {
   try {
@@ -104,7 +102,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
       content: req.body.content,
       currentTime: req.body.currentTime
     };
-    
+
     await gongCollection.insertOne(post);
     console.log('저장완료');
     res.send('전송완료');
@@ -113,11 +111,6 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
     res.status(500).send('업로드에 실패하였습니다.');
   }
 });
-
-
-
-
-
 
 app.get('/gong', async (req, res) => {
   try {
@@ -133,7 +126,7 @@ app.post('/updateCheck/:id', async (req, res) => {
   try {
     const postId = req.params.id;
     const checkValue = req.body.check === 'on' ? 'o' : 'x';
-    await postCollection.updateOne({ _id:  new ObjectId(postId) }, { $set: { check: checkValue } });
+    await postCollection.updateOne({ _id: new ObjectId(postId) }, { $set: { check: checkValue } });
     console.log('체크값 업데이트 완료');
     res.redirect('/list');
   } catch (error) {
@@ -141,7 +134,6 @@ app.post('/updateCheck/:id', async (req, res) => {
     res.status(500).send('체크값 업데이트에 실패하였습니다.');
   }
 });
-
 
 app.delete('/delete/:id', async (req, res) => {
   try {
@@ -155,10 +147,6 @@ app.delete('/delete/:id', async (req, res) => {
   }
 });
 
-
-
-
-
 app.delete('/gong/delete/:id', async (req, res) => {
   try {
     const postId = req.params.id;
@@ -170,5 +158,3 @@ app.delete('/gong/delete/:id', async (req, res) => {
     res.sendStatus(500);
   }
 });
-
-
