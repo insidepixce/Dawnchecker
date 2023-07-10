@@ -34,7 +34,7 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname));
 app.use('/image', express.static('public/image'));
 app.set("view engine", "ejs");
-app.use('/image', express.static(path.join(__dirname, 'public', 'image')));\
+app.use('/image', express.static(path.join(__dirname, 'public', 'image')));
 //캐시 컨트롤 헤더 
 app.use('/image', express.static(path.join(__dirname, 'public', 'image'), {
   setHeaders: function (res, path, stat) {
