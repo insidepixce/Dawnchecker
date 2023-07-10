@@ -116,7 +116,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
 
     await gongCollection.insertOne(post);
     console.log('저장완료');
-    res.send('전송완료');
+    res.redirect('/gong');
   } catch (error) {
     console.error('Error while uploading post:', error);
     res.status(500).send('업로드에 실패하였습니다.');
