@@ -88,7 +88,7 @@
     deleteForms.forEach((form) => {
       form.addEventListener('submit', (event) => {
         event.preventDefault();
-        const confirmDelete = confirm('Are you sure you want to delete this post?');
+        const confirmDelete = confirm('진짜로 삭제하실건가요?');
         if (confirmDelete) {
           const url = '/gong' + form.getAttribute('action');  // '/gong' prefix added
           fetch(url, {
@@ -101,12 +101,12 @@
             if (response.ok) {
               form.closest('.post-container').remove();
             } else {
-              alert('Failed to delete the post.');
+              alert('섹제에 실패하셨습니다');
             }
           })
           .catch((error) => {
             console.error('Error deleting post:', error);
-            alert('An error occurred while deleting the post.');
+            alert('삭제에 에러가 났습니다.');
           });
         }
       });
