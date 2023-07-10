@@ -161,7 +161,7 @@ app.delete('/delete/:id', async (req, res) => {
   }
 });
 
-//공부한 사진 & 글 삭제s
+//공부한 사진 & 글 삭제
 app.delete('/gong/delete/:id', async (req, res) => {
   try {
     const postId = req.params.id;
