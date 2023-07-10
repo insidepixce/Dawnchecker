@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const { MongoClient, ObjectId } = require('mongodb');
 const multer = require('multer');
 
+
+//multer 설정
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, 'public', 'image'));
@@ -25,18 +27,22 @@ const upload = multer({
   }
 });
 
+//어플리케이션 설정
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 app.use('/image', express.static('public/image'));
 app.set("view engine", "ejs");
-app.use('/image', express.static(path.join(__dirname, 'public', 'image')));
+app.use('/image', express.static(path.join(__dirname, 'public', 'image')));\
+//캐시 컨트롤 헤더 
 app.use('/image', express.static(path.join(__dirname, 'public', 'image'), {
   setHeaders: function (res, path, stat) {
     res.set('Cache-Control', 'public, max-age=31536000'); // 1 year
   }
 }));
 
+//몽고디비 연결 
 const url = 'mongodb+srv://sparta:test@sparta.rqx1qlk.mongodb.net/?retryWrites=true&w=majority';
 const dbName = 'todoapp';
 let postCollection;
@@ -58,14 +64,17 @@ const connectToMongoDB = async () => {
 
 connectToMongoDB(); // MongoDB에 연결
 
+//포트 연결
 app.listen(3000, '0.0.0.0', () => {
   console.log('Listening on port 3000');
 });
 
+//라우팅
 app.get('/main', async (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'main.html'));
 });
 
+//메인 화면 설정
 app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'write.html'));
 });
@@ -85,6 +94,7 @@ app.post('/add', async (req, res) => {
   }
 });
 
+//할 일 리스트 불러오는 부분
 app.get('/list', async (req, res) => {
   try {
     const result = await postCollection.find().toArray();
@@ -95,6 +105,7 @@ app.get('/list', async (req, res) => {
   }
 });
 
+//새벽 기록 사진 & 글 업로드 
 app.post('/upload', upload.single('photo'), async (req, res) => {
   try {
     const post = {
@@ -112,6 +123,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
   }
 });
 
+//공부한 사진 &글 불러오기
 app.get('/gong', async (req, res) => {
   try {
     const posts = await gongCollection.find().toArray();
@@ -122,6 +134,7 @@ app.get('/gong', async (req, res) => {
   }
 });
 
+//리스트에서 체크박스 체크시 업데이트
 app.post('/updateCheck/:id', async (req, res) => {
   try {
     const postId = req.params.id;
@@ -135,6 +148,7 @@ app.post('/updateCheck/:id', async (req, res) => {
   }
 });
 
+//할 일 리스트 삭제 
 app.delete('/delete/:id', async (req, res) => {
   try {
     const postId = req.params.id;
@@ -147,6 +161,7 @@ app.delete('/delete/:id', async (req, res) => {
   }
 });
 
+//공부한 사진 & 글 삭제s
 app.delete('/gong/delete/:id', async (req, res) => {
   try {
     const postId = req.params.id;
@@ -158,3 +173,5 @@ app.delete('/gong/delete/:id', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+
