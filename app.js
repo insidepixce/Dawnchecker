@@ -8,8 +8,8 @@ const AWS = require('aws-sdk');
 
 // AWS S3 설정
 const s3 = new AWS.S3({
-  accessKeyId: '',
-  secretAccessKey: '',
+  accessKeyId: 'AKIARFYBYQC7H23UEC7A',
+  secretAccessKey: '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',
 });
 
 
@@ -102,6 +102,21 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
   } catch (error) {
     console.error('Error while uploading post:', error);
     res.status(500).send('업로드에 실패하였습니다.');
+  }
+});
+//리스트 업로드
+app.post('/add', async (req, res) => {
+  try {
+    const result = await counterCollection.findOne({ name: '게시물갯수' });
+    const totalPost = result.totalPost;
+    await postCollection.insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x' });
+    console.log('저장완료');
+    await counterCollection.updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } });
+    const postresult = await postCollection.find().toArray();
+    res.render('list.ejs', { posts: postresult });
+  } catch (error) {
+    console.error('Error while adding post:', error);
+    res.status(500).send('전송에 실패하였습니다.');
   }
 });
 
