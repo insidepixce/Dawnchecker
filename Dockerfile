@@ -25,16 +25,12 @@ COPY --link package.json package-lock.json ./
 RUN npm install
 
 # Copy application code
-COPY --link ..
+COPY --link . .
 
 
 
 # Final stage for app image
 FROM base
-
-# Download and save the user-uploaded image
-ARG IMAGE_NAME
-RUN curl -o /app/$IMAGE_NAME https://dawnlight.fly.dev/image/$IMAGE_NAME
 
 # Copy built application
 COPY --from=build /app /app

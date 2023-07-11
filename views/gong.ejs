@@ -57,22 +57,23 @@
     </div>
   </nav>
   
+   
   <div class="container">
     <div class="row">
       <% posts.forEach(function(post) { %>
         <div class="post-container">
           <div class="card">
-            <% if (Array.isArray(post.filename)) { %>
-              <% post.filename.forEach(function(filename) { %>
-                <div class="post-image" style="background-image: url('/image/<%= filename %>')"></div>
+            <% if (Array.isArray(post.fileLink)) { %>
+              <% post.fileLink.forEach(function(link) { %>
+                <div class="post-image" style="background-image: url('<%= link %>')"></div>
               <% }); %>
             <% } else { %>
-              <div class="post-image" style="background-image: url('/image/<%= post.filename %>')"></div>
+              <div class="post-image" style="background-image: url('<%= post.fileLink %>')"></div>
             <% } %>
             <div class="card-body">
               <p class="card-text"><%= post.content %></p>
               <p class="card-text"><small class="text-muted">Uploaded at: <%= post.currentTime %></small></p>
-              <form action="/delete/<%= post._id %>" method="POST" class="delete-form">
+              <form action="/gong/delete/<%= post._id %>" method="POST" class="delete-form">
                 <button type="submit" class="btn btn-danger btn-sm" data-method="DELETE">Delete</button>
               </form>              
             </div>
@@ -90,7 +91,7 @@
         event.preventDefault();
         const confirmDelete = confirm('진짜로 삭제하실건가요?');
         if (confirmDelete) {
-          const url = '/gong' + form.getAttribute('action');  // '/gong' prefix added
+          const url = form.getAttribute('action');
           fetch(url, {
             method: 'DELETE',
             headers: {
@@ -101,17 +102,18 @@
             if (response.ok) {
               form.closest('.post-container').remove();
             } else {
-              alert('섹제에 실패하셨습니다');
+              alert('삭제에 실패하셨습니다.');
             }
           })
           .catch((error) => {
             console.error('Error deleting post:', error);
-            alert('삭제에 에러가 났습니다.');
+            alert('삭제에 에러가 발생했습니다.');
           });
         }
       });
     });
   </script>
+  
   
 </body>
 

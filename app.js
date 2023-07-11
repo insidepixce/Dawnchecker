@@ -4,28 +4,19 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const { MongoClient, ObjectId } = require('mongodb');
 const multer = require('multer');
+const AWS = require('aws-sdk');
 
-
-//multer 설정
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'public', 'image'));
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + '.jpeg');
-  }
+// AWS S3 설정
+const s3 = new AWS.S3({
+  accessKeyId: 'AKIARFYBYQC7H23UEC7A',
+  secretAccessKey: '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',
 });
 
-const upload = multer({
-  storage: storage,
-  fileFilter: function (req, file, cb) {
-    if (file.mimetype === 'image/jpeg') {
-      cb(null, true);
-    } else {
-      cb(null, false);
-    }
-  }
-});
+
+// multer 설정
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 
 //어플리케이션 설정
 
@@ -79,18 +70,38 @@ app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'write.html'));
 });
 
-app.post('/add', async (req, res) => {
+app.post('/upload', upload.single('photo'), async (req, res) => {
   try {
-    const result = await counterCollection.findOne({ name: '게시물갯수' });
-    const totalPost = result.totalPost;
-    await postCollection.insertOne({ 제목: req.body.title, 날짜: req.body.date, check: 'x' });
+    const file = req.file;
+    const content = req.body.content;
+    const currentTime = req.body.currentTime;
+
+    const params = {
+      Bucket: 'dawnchecker',
+      Key: `${Date.now()}-${file.originalname}`,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
+
+    // S3에 파일 업로드
+    const uploadedFile = await s3.upload(params).promise();
+
+    // 업로드된 파일의 링크
+    const fileLink = uploadedFile.Location;
+
+    // 데이터베이스에 저장
+    const post = {
+      fileLink: fileLink,
+      content: content,
+      currentTime: currentTime,
+    };
+    await gongCollection.insertOne(post);
+
     console.log('저장완료');
-    await counterCollection.updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } });
-    const postresult = await postCollection.find().toArray();
-    res.render('list.ejs', { posts: postresult });
+    res.redirect('/gong');
   } catch (error) {
-    console.error('Error while adding post:', error);
-    res.status(500).send('전송에 실패하였습니다.');
+    console.error('Error while uploading post:', error);
+    res.status(500).send('업로드에 실패하였습니다.');
   }
 });
 
@@ -148,11 +159,11 @@ app.post('/updateCheck/:id', async (req, res) => {
   }
 });
 
-//할 일 리스트 삭제 
+// 할 일 리스트 삭제
 app.delete('/delete/:id', async (req, res) => {
   try {
     const postId = req.params.id;
-    await postCollection.deleteOne({ _id: new ObjectId(postId) });
+    await postCollection.deleteOne({ _id: ObjectId(postId) });
     console.log('게시물 삭제 완료');
     res.sendStatus(200);
   } catch (error) {
@@ -161,11 +172,11 @@ app.delete('/delete/:id', async (req, res) => {
   }
 });
 
-//공부한 사진 & 글 삭제
+// 공부한 사진 & 글 삭제
 app.delete('/gong/delete/:id', async (req, res) => {
   try {
     const postId = req.params.id;
-    await gongCollection.deleteOne({ _id: new ObjectId(postId) });
+    await gongCollection.deleteOne({ _id: ObjectId(postId) });
     console.log('데이터 삭제 완료');
     res.sendStatus(200);
   } catch (error) {
@@ -173,5 +184,3 @@ app.delete('/gong/delete/:id', async (req, res) => {
     res.sendStatus(500);
   }
 });
-
-
