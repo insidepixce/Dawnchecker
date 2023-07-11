@@ -199,3 +199,4 @@ app.delete('/gong/delete/:id', async (req, res) => {
     res.sendStatus(500);
   }
 });
+ㅎㅎ
