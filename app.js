@@ -8,7 +8,7 @@ const AWS = require('aws-sdk');
 
 // AWS S3 설정
 const s3 = new AWS.S3({
-  accessKeyId: 'AKIARFYBYQC7H23',
+  accessKeyId: '',
   secretAccessKey: '',
 });
 
