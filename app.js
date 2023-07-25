@@ -8,8 +8,8 @@ const AWS = require('aws-sdk');
 
 // AWS S3 설정
 const s3 = new AWS.S3({
-  accessKeyId: '',
-  secretAccessKey: '',
+  accessKeyId: 'AKIA5VAB2QBYIYAF7AXQ',
+  secretAccessKey: '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',
 });
 
 
@@ -77,7 +77,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
     const currentTime = req.body.currentTime;
 
     const params = {
-      Bucket: 'dawnchecker',
+      Bucket: 'dawncheckers',
       Key: `${Date.now()}-${file.originalname}`,
       Body: file.buffer,
       ContentType: file.mimetype,
